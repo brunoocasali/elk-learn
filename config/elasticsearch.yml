@@ -1,2 +1,4 @@
-cluster.name: "the-fckin-cluster"
-node.name: "awesome-node-1"
+cluster.name: fckin-cluster
+node.name: awesome-node-2
+bootstrap.memory_lock: true
+node.max_local_storage_nodes: 3

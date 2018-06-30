@@ -3,11 +3,32 @@ version: '3'
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.3.0
-    container_name: elasticsearch
+    environment:
+      - node.name=awesome-node-1
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
     volumes:
-      - ./config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
-    environment: ['http.host=0.0.0.0', 'transport.host=127.0.0.1']
-    ports: ['127.0.0.1:9200:9200']
+      - data:/usr/share/elasticsearch/data
+      - ./config/elasticsearch.yml:/usr/share/elasticsearch/elasticsearch.yml
+    ports: ['9200:9200']
+    networks: ['stack']
+
+  elasticsearch2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.3.0
+    environment:
+      - node.name=awesome-node-2
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.ping.unicast.hosts=elasticsearch"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data2:/usr/share/elasticsearch/data
+      - ./config/elasticsearch.yml:/usr/share/elasticsearch/elasticsearch.yml
     networks: ['stack']
 
   kibana:
@@ -17,12 +38,12 @@ services:
     networks: ['stack']
     depends_on: ['elasticsearch']
 
-  logstash:
-    image: docker.elastic.co/logstash/logstash:6.3.0
-    container_name: logstash
-    volumes:
-      - ./config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-    networks: ['stack']
-    depends_on: ['elasticsearch']
-
-networks: {stack: {}}
+#   logstash:
+#     image: docker.elastic.co/logstash/logstash:6.3.0
+#     container_name: logstash
+#     volumes:
+#       - ./config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+#     networks: ['stack']
+#     depends_on: ['elasticsearch']
+networks: { stack: {} }
+volumes: { data: { driver: local }, data2: { driver: local } }
